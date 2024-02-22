@@ -77,3 +77,20 @@ static async Task GenerateSeedAsync(IServiceProvider services)
     var seedService = scope.ServiceProvider.GetRequiredService<ISeedService>();
     await seedService.SeedDataAsync();
 }
+
+/*
+1-streaming rendring
+2-interactive server mode => SSR
+
+11:00 - 26:24
+shared comps
+fix footer
+
+26:25 - 40:29
+Add Entities
+
+40:30 - 1:14:00
+Seed Data
+Dashboard
+
+ */
