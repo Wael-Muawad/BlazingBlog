@@ -1,14 +1,17 @@
 ﻿@page "/Account/Login"
 
 @using System.ComponentModel.DataAnnotations
+@using BlazingBlog.Utils
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
 @using BlazingBlog.Data
+@using System.Security.Claims
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject UserManager<ApplicationUser> UserManager
 
 <PageTitle>Log in</PageTitle>
 
@@ -85,31 +88,58 @@
         }
     }
 
+    private async Task PerformLogin()
+    {
+        var resultUser = await UserManager.FindByEmailAsync(Input.Email);
+        if (resultUser is null)
+        {
+            errorMessage = "Error: Invalid login attempt.";
+            return;
+        }
+        var result = await SignInManager.CheckPasswordSignInAsync(resultUser, Input.Password, false);
+        if (!result.Succeeded)
+        {
+            errorMessage = "Error: Invalid login attempt.";
+            return;
+        }
+
+        var claims = new Claim[]
+        {
+            new Claim(AppConstants.FullName, resultUser.Name),
+            new Claim(AppConstants.LoggedInAt,DateTime.Now.ToString())
+        };
+
+        await SignInManager.SignInWithClaimsAsync(resultUser, Input.RememberMe, claims);
+        Logger.LogInformation("User logged in.");
+        RedirectManager.RedirectTo(ReturnUrl);
+    }
     public async Task LoginUser()
     {
         // This doesn't count login failures towards account lockout
         // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
-        if (result.Succeeded)
-        {
-            Logger.LogInformation("User logged in.");
-            RedirectManager.RedirectTo(ReturnUrl);
-        }
-        else if (result.RequiresTwoFactor)
-        {
-            RedirectManager.RedirectTo(
-                "Account/LoginWith2fa",
-                new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
-        }
-        else if (result.IsLockedOut)
-        {
-            Logger.LogWarning("User account locked out.");
-            RedirectManager.RedirectTo("Account/Lockout");
-        }
-        else
-        {
-            errorMessage = "Error: Invalid login attempt.";
-        }
+
+        await PerformLogin();
+        // var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+        // if (result.Succeeded)
+        // {
+        //     Logger.LogInformation("User logged in.");
+        //     RedirectManager.RedirectTo(ReturnUrl);
+        // }
+        // else if (result.RequiresTwoFactor)
+        // {
+        //     RedirectManager.RedirectTo(
+        //         "Account/LoginWith2fa",
+        //         new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
+        // }
+        // else if (result.IsLockedOut)
+        // {
+        //     Logger.LogWarning("User account locked out.");
+        //     RedirectManager.RedirectTo("Account/Lockout");
+        // }
+        // else
+        // {
+        //     errorMessage = "Error: Invalid login attempt.";
+        // }
     }
 
     private sealed class InputModel

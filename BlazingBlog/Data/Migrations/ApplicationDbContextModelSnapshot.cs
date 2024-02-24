@@ -152,7 +152,7 @@ namespace BlazingBlog.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("BlogPosts");
+                    b.ToTable("BlogPosts", (string)null);
                 });
 
             modelBuilder.Entity("BlazingBlog.Data.Entities.Category", b =>
@@ -178,7 +178,7 @@ namespace BlazingBlog.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("BlazingBlog.Data.Entities.Subscriber", b =>
@@ -204,7 +204,7 @@ namespace BlazingBlog.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Subscribers");
+                    b.ToTable("Subscribers", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

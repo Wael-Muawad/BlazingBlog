@@ -93,4 +93,8 @@ Add Entities
 Seed Data
 Dashboard
 
+1:14:00 - 1:37:10
+fix navbar at login and manage claims
+
+
  */
