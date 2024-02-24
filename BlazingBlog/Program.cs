@@ -96,5 +96,8 @@ Dashboard
 1:14:00 - 1:37:10
 fix navbar at login and manage claims
 
+1:37:10 - 1:44:35
+fix login screen
+
 
  */
