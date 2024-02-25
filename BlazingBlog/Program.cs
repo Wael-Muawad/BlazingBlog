@@ -91,13 +91,23 @@ Add Entities
 
 40:30 - 1:14:00
 Seed Data
-Dashboard
+
 
 1:14:00 - 1:37:10
 fix navbar at login and manage claims
 
 1:37:10 - 1:44:35
 fix login screen
+
+
+1:44:35 - 2:13:00
+Dashboard
+1-admin layout
+ 
+
+2:13:00 - 2:13:00
+
+
 
 
  */

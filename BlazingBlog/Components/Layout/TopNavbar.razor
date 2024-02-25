@@ -1,7 +1,4 @@
-﻿@using BlazingBlog.Utils
-@inject NavigationManager NavigationManager
-
-<!--------------------------------------
+﻿<!--------------------------------------
 NAVBAR
 --------------------------------------->
 <nav class="topnav navbar navbar-expand-lg navbar-light bg-white fixed-top">
@@ -39,16 +36,10 @@ NAVBAR
                 <AuthorizeView>
                     <Authorized>
                         <li class="nav-item">
-                            <a class="nav-link" href="/">@context.User.GetFullNameClaim()</a>
+                            <a class="nav-link" href="admin/dashboard">@context.User.GetFullNameClaim()</a>
                         </li>
                         <li class="nav-item highlight">
-                            <form action="Account/Logout" method="post">
-                                <AntiforgeryToken />
-                                <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                                <button type="submit" class="nav-link">
-                                    <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
-                                </button>
-                            </form>
+                            <LogoutForm BtnClass="nav-link" />
                         </li>
                     </Authorized>
 
@@ -64,10 +55,5 @@ NAVBAR
 </nav>
 <!-- End Navbar -->
 @code {
-    private string? currentUrl;
 
-    protected override void OnInitialized()
-    {
-        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-    }
 }

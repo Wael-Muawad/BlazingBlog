@@ -1,0 +1,27 @@
+﻿@inject NavigationManager NavigationManager
+
+<form action="Account/Logout" method="post">
+    <AntiforgeryToken />
+    <input type="hidden" name="ReturnUrl" value="@redirectUrl" />
+    <button type="submit" class="@BtnClass">
+        <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+    </button>
+</form>
+
+
+
+
+
+@code {
+    [Parameter, EditorRequired]
+    public string BtnClass { get; set; } = string.Empty;
+
+    private string redirectUrl = string.Empty;
+
+
+
+    protected override void OnInitialized()
+    {
+        redirectUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+    }
+}
