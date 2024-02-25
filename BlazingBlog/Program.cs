@@ -119,7 +119,17 @@ add quickgrid to manage categories
 add functionality to manage category
 
 
-3:34:00 - 3:49:00
+3:34:00 - 3:43:50
 add categories to navbar if ShowOnNavbar is true
+
+
+3:43:50 - 4:12:58
+add blogpost service
+
+
+4:12:58 - 4:12:58
+add manage blogpost page
+
+
 
  */
