@@ -1,16 +1,53 @@
 ﻿@page "/admin/manage-categories"
+@inject ICategoryService CategoryService
+@rendermode @(new InteractiveServerRenderMode(prerender:false))
 
 
 <AdminHeader Title="Dashboard">
     <ActionButtons>
-        <button type="button" 
+        <button type="button"
                 class="btn btn-sm btn-primary">
             Add New Category
         </button>
     </ActionButtons>
 </AdminHeader>
 
+<QuickGrid Items="@Categories" Class="table table-bordered table-striped table-hover">
+    <PropertyColumn Property="@(c => c.Name)" />
+    <PropertyColumn Property="@(c => c.Slug)" />
+    <TemplateColumn Title="Show On Navbar">
+        @if (context.ShowOnNavbar)
+        {
+            <label class="text-success">
+                <input type="checkbox" @onchange="@(() => ShowOnNavbarHandler(context))" checked /> Yes
+            </label>
+        }
+        else
+        {
+            <label class="text-danger">
+                <input type="checkbox" @onchange="@(() => ShowOnNavbarHandler(context))" /> No
+            </label>
+        }
+    </TemplateColumn>
+    <TemplateColumn>
+        <button type="button"
+                class="btn btn-sm btn-primary">
+            Add Category
+        </button>
+    </TemplateColumn>
+</QuickGrid>
 
 @code {
+    private IQueryable<Category> Categories { get; set; } = Enumerable.Empty<Category>().AsQueryable();
 
+    protected override async Task OnInitializedAsync()
+    {
+        Categories = (await CategoryService.GetCategories()).AsQueryable();
+    }
+
+    private async Task ShowOnNavbarHandler(Category category)
+    {
+        category.ShowOnNavbar = !category.ShowOnNavbar;
+        await CategoryService.SaveCategory(category);
+    }
 }

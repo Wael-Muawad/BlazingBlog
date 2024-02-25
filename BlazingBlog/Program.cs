@@ -11,7 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+    .AddInteractiveServerComponents()
+    .AddCircuitOptions(op => op.DetailedErrors = true);
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
@@ -111,8 +112,8 @@ Dashboard
 2:13:00 - 2:37:45
 Add Category service
 
-
-Manage Categories page
+2:37:45 - 3:00:28
+add quickgrid to manage categories
 
 
 

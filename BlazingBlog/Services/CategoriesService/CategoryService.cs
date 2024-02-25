@@ -53,7 +53,7 @@ namespace BlazingBlog.Services.CategoriesService
                 {
                     if (await context.Categories
                         .AsNoTracking()
-                        .AnyAsync(c => c.Name == category.Name))
+                        .AnyAsync(c => c.Name == category.Name && c.Id != category.Id))
                     {
                         throw new InvalidOperationException($"Category with name {category.Name} already exist");
                     }
