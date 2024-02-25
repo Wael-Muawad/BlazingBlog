@@ -1,6 +1,7 @@
 using BlazingBlog.Components;
 using BlazingBlog.Components.Account;
 using BlazingBlog.Data;
+using BlazingBlog.Services.CategoriesService;
 using BlazingBlog.Services.SeedsService;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -17,7 +18,8 @@ builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
-builder.Services.AddTransient<ISeedService, SeedService>();
+builder.Services.AddTransient<ISeedService, SeedService>()
+                .AddTransient<ICategoryService, CategoryService>();
 
 builder.Services.AddAuthentication(options =>
     {
@@ -27,8 +29,9 @@ builder.Services.AddAuthentication(options =>
     .AddIdentityCookies();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
@@ -105,8 +108,11 @@ Dashboard
 1-admin layout
  
 
-2:13:00 - 2:13:00
+2:13:00 - 2:37:45
+Add Category service
 
+
+Manage Categories page
 
 
 
