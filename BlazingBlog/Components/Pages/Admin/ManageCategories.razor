@@ -6,11 +6,55 @@
 <AdminHeader Title="Dashboard">
     <ActionButtons>
         <button type="button"
-                class="btn btn-sm btn-primary">
+                class="btn btn-sm btn-primary"
+                @onclick="() => _operatingCategory = new()">
             Add New Category
         </button>
     </ActionButtons>
 </AdminHeader>
+
+
+@if (_isLoading)
+{
+    <Loader LoaderText="@_loaderText" />
+}
+
+
+@if (_operatingCategory is not null)
+{
+    <div class="row">
+        <div class="col-sm-6"></div>
+        <div class="col-sm-6">
+            <EditForm Model="_operatingCategory" OnValidSubmit="@CategoryFormSubmitHandler">
+                <DataAnnotationsValidator />
+
+                <div class="shadow p-3" style="display: grid; grid-template-columns: auto 150px; grid-column-gap: 15px">
+                    <div>
+                        <label class="col-form-label">Category Name</label>
+                        <InputText @bind-Value="_operatingCategory.Name"
+                                   class="form-control form-control-sm"
+                                   placeholder="Category Name" />
+
+                        <ValidationMessage For="@(() => _operatingCategory.Name)" />
+                        <label class="col-form-label mt-2">
+                            <InputCheckbox @bind-Value="_operatingCategory.ShowOnNavbar" />
+                            Show On Navbar
+                        </label>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <button type="submit" class="btn btn-sm btn-success mb-2">Save</button>
+
+                        <button type="button" class="btn btn-sm btn-danger"
+                                @onclick="() => _operatingCategory = null">
+                            Cancle
+                        </button>
+                    </div>
+                </div>
+
+            </EditForm>
+        </div>
+    </div>
+}
 
 <QuickGrid Items="@Categories" Class="table table-bordered table-striped table-hover">
     <PropertyColumn Property="@(c => c.Name)" />
@@ -30,24 +74,52 @@
         }
     </TemplateColumn>
     <TemplateColumn>
-        <button type="button"
-                class="btn btn-sm btn-primary">
-            Add Category
+        <button type="button" class="btn btn-sm btn-primary"
+                @onclick="() => _operatingCategory = context.Clone()">
+            Edit
         </button>
     </TemplateColumn>
 </QuickGrid>
 
 @code {
     private IQueryable<Category> Categories { get; set; } = Enumerable.Empty<Category>().AsQueryable();
+    private Category? _operatingCategory { get; set; }
+    private bool _isLoading = true;
+    private string _loaderText = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadCategories();
+    }
+
+    private async Task LoadCategories()
+    {
+        _loaderText = "Fetching Categories...";
         Categories = (await CategoryService.GetCategories()).AsQueryable();
+        _isLoading = false;
     }
 
     private async Task ShowOnNavbarHandler(Category category)
     {
+        _loaderText = "Saving changes...";
+        _isLoading = true;
         category.ShowOnNavbar = !category.ShowOnNavbar;
         await CategoryService.SaveCategory(category);
+        _isLoading = false;
+    }
+
+    private async Task CategoryFormSubmitHandler()
+    {
+        if (_operatingCategory is not null)
+        {
+            _loaderText = "Saving changes...";
+            _isLoading = true;
+            await CategoryService.SaveCategory(_operatingCategory);
+            _isLoading = false;
+            _operatingCategory = null;
+            await LoadCategories(); // eather reload categories or edit the _operatingCategory item
+            // StateHasChanged();
+            // InvokeAsync();
+        }
     }
 }

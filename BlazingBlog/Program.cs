@@ -115,6 +115,11 @@ Add Category service
 2:37:45 - 3:00:28
 add quickgrid to manage categories
 
+3:00:28 - 3:34:00
+add functionality to manage category
 
+
+3:34:00 - 3:34:00
+add categories to navbar if ShowOnNavbar is true
 
  */

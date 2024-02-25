@@ -62,7 +62,7 @@ namespace BlazingBlog.Services.CategoriesService
 
                     dbCategory.Name = category.Name;
                     dbCategory.ShowOnNavbar = category.ShowOnNavbar;
-                    dbCategory.Slug = category.Name.ToSlug();
+                    category.Slug = dbCategory.Slug;
                 }
 
                 await context.SaveChangesAsync();
