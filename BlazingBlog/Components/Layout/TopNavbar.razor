@@ -1,4 +1,6 @@
-﻿<!--------------------------------------
+﻿@inject ICategoryService CategoryService
+
+<!--------------------------------------
 NAVBAR
 --------------------------------------->
 <nav class="topnav navbar navbar-expand-lg navbar-light bg-white fixed-top">
@@ -15,21 +17,13 @@ NAVBAR
                 <li class="nav-item">
                     <a class="nav-link" href="/">Home<span class="sr-only">(current)</span></a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="category">Culture</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="category">Tech</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="category">Politics</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="category">Health</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="category">Collections</a>
-                </li>
+                @foreach (var item in Categories)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" href="category">@item.Name</a>
+                    </li>
+                }
+
             </ul>
 
             <ul class="navbar-nav ml-auto d-flex align-items-center">
@@ -55,5 +49,24 @@ NAVBAR
 </nav>
 <!-- End Navbar -->
 @code {
+    private Category[] Categories { get; set; } = [];
+    private int MaxCat = 5;
 
+    protected override async Task OnInitializedAsync()
+    {
+        var categoriesDB = await CategoryService.GetCategories();
+
+        Categories = categoriesDB
+                        .Where(c => c.ShowOnNavbar)
+                        .Take(MaxCat)
+                        .ToArray();
+
+        if (Categories.Length < MaxCat)
+        {
+            Categories = [
+                .. Categories,
+                .. categoriesDB.Where(c => !c.ShowOnNavbar).Take(MaxCat - Categories.Length)
+            ];
+        }
+    }
 }
