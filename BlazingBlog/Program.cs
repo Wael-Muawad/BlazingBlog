@@ -125,12 +125,12 @@ add functionality to manage category
 add categories to navbar if ShowOnNavbar is true
 
 
-3:43:50 - 4:12:58
+3:43:50 - 4:11:50
 add blogpost service
 
 
-4:12:58 - 4:12:58
-add manage blogpost page
+4:11:50 - 4:43:25(4:56:40)
+add manage blogpost page and add blogpost page
 
 
 

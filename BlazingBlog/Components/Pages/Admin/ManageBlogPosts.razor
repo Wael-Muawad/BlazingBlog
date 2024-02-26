@@ -1,0 +1,65 @@
+﻿@page "/admin/manage-blog-posts"
+
+@inject IBlogPostService BlogPostService
+@rendermode @(new InteractiveServerRenderMode(prerender:false))
+
+
+<AdminHeader Title="Manage Blog Posts">
+    <ActionButtons>
+        <a href="admin/manage-blog-posts/new"
+           class="btn btn-sm btn-primary">
+            Add New Blog Post
+        </a>
+    </ActionButtons>
+</AdminHeader>
+
+
+@if (_isLoading)
+{
+    <Loader LoaderText="@_loaderText" />
+}
+
+<QuickGrid ItemsProvider="_gridItemsProvider" Pagination="_paginationState">
+    <PropertyColumn Property="@(b => b.Id)" />
+    <PropertyColumn Property="@(b => b.Title)" />
+
+</QuickGrid>
+
+<Paginator State="_paginationState"></Paginator>
+
+
+
+
+
+
+
+
+
+
+
+
+@code {
+    private bool _isLoading;
+    private string _loaderText;
+    public const int PageSize = 10;
+    GridItemsProvider<BlogPost> _gridItemsProvider; //todo use dto with mapper
+    PaginationState _paginationState = new PaginationState
+        {
+            ItemsPerPage = PageSize
+        };
+
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        _gridItemsProvider = async request =>
+        {
+            _isLoading = true;
+            _loaderText = "Fetching blog posts...";
+            var pagedBlogs = await BlogPostService.GetBlogPosts(request.StartIndex, request.Count ?? PageSize);
+
+            _isLoading = false;
+            return GridItemsProviderResult.From(pagedBlogs.Records, pagedBlogs.TotalCount);
+        };
+    }
+}

@@ -4,7 +4,7 @@
 @inject NavigationManager NavigationManager
 
 
-<AdminHeader Title="Dashboard">
+<AdminHeader Title="Manage Categories">
     <ActionButtons>
         <button type="button"
                 class="btn btn-sm btn-primary"
@@ -28,6 +28,7 @@
         <div class="col-sm-6">
             <EditForm Model="_operatingCategory" OnValidSubmit="@CategoryFormSubmitHandler" Enhance = "true">
                 <DataAnnotationsValidator />
+                <AntiforgeryToken />
 
                 <div class="shadow p-3" style="display: grid; grid-template-columns: auto 150px; grid-column-gap: 15px">
                     <div>
