@@ -3,6 +3,7 @@
 @inject ICategoryService CategoryService
 @inject IBlogPostService BlogPostService
 @inject IWebHostEnvironment WebHostEnvironment
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @rendermode @(new InteractiveServerRenderMode(prerender:true))
 @layout AdminLayout
 @attribute [Authorize]
@@ -27,9 +28,10 @@
 }
 
 
-<EditForm Model="_model" OnSubmit="SubmitFormHandler">
+<EditForm Model="_model" OnValidSubmit="SaveBlogPost">
     <DataAnnotationsValidator />
     <AntiforgeryToken />
+    <ValidationSummary />
     @* <ValidationSummary Model="_errorMessage" /> *@
 
     <div class="row">
@@ -64,8 +66,8 @@
 
             <div class="mb-3">
                 <label class="col-form-label">Upload Image</label>
-                <InputFile @bind-Value="_model.Image" OnChange="@HandleFileUpload" />
-                <ValidationMessage For="() => _model.Image" class="text-danger" />
+                <InputFile OnChange="@HandleFileUpload" />
+                @* <ValidationMessage For="() => _model.Image" class="text-danger" /> *@
             </div>
 
             @if (!string.IsNullOrWhiteSpace(_previewImageUrl))
@@ -80,7 +82,6 @@
                     <InputCheckbox @bind-Value="_model.IsFeatured" class="form-check-input" />
                     Featured?
                 </label>
-                <ValidationMessage For="() => _model.IsFeatured" class="text-danger" />
             </div>
 
             <div class="mb-3 ml-4">
@@ -88,12 +89,18 @@
                     <InputCheckbox @bind-Value="_model.IsPublished" class="form-check-input" />
                     Published?
                 </label>
-                <ValidationMessage For="() => _model.IsPublished" class="text-danger" />
             </div>
 
             <div class="mb-3">
                 <button type="submit" class="btn btn-outline-success">Save</button>
             </div>
+
+            @if (!string.IsNullOrWhiteSpace(_errorMessage))
+            {
+                <div class="mb-3">
+                    <p class="text-danger">@_errorMessage</p>
+                </div>
+            }
         </div>
 
 
@@ -134,7 +141,8 @@
                     </EditorContent>
                 </BlazoredTextEditor>
 
-                <ValidationMessage For="()=> _model.Content" />
+                @* <ValidationMessage For="()=> _model.Content" /> *@
+
             </div>
         </div>
     </div>
@@ -149,7 +157,7 @@
     private BlogPost _model = new();
     private Category[] _categories = [];
     private BlazoredTextEditor? quillHtml;
-
+    private string? _errorMessage;
     //////////////////////////////////////
     private string? _previewImageUrl;
     private const long _maxAllowSize = 3072000;
@@ -158,8 +166,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        _loaderText = "Fetching data...";
         _isLoading = true;
-        _loaderText = "Fetching blog posts...";
 
         _categories = await CategoryService.GetCategories();
         _isLoading = false;
@@ -180,37 +188,69 @@
         _imageBrowserFile = browserFile;
     }
 
-    private async Task SaveImage()
+
+    private async Task<string?> SaveImage()
     {
-        if (_imageBrowserFile is not null)
+        try
         {
-            try
-            {
-                var folderPath = Path.Combine(WebHostEnvironment.WebRootPath, "Images", "BlogPosts");
-                Directory.CreateDirectory(folderPath);
+            var folderPath = Path.Combine(WebHostEnvironment.WebRootPath, "Images", "BlogPosts");
+            Directory.CreateDirectory(folderPath);
 
-                var imageName = Path.GetRandomFileName();
-                var imageExtension = Path.GetExtension(_imageBrowserFile.Name);
-                var imageFullPath = Path.Combine(WebHostEnvironment.WebRootPath, folderPath, imageName, imageExtension);
+            var imageName = Path.GetRandomFileName();
+            var imageExtension = Path.ChangeExtension(imageName, Path.GetExtension(_imageBrowserFile.Name));
 
-                using var fileStream = new FileStream(folderPath, FileMode.Create);
-                using var imageStream = _imageBrowserFile.OpenReadStream(_maxAllowSize);
-                await imageStream.CopyToAsync(fileStream);
+            var imageRelativePath = Path.Combine("Images", "BlogPosts", (imageName + imageExtension));
+            var imageAbsolutePath = Path.Combine(WebHostEnvironment.WebRootPath, imageRelativePath);
 
-                _model.Image = imageName;
-                _model.Content = imageName;
-                _imageBrowserFile = null;
-            }
-            catch (Exception ex)
-            {
+            await using var fileStream = new FileStream(imageAbsolutePath, FileMode.Create);
+            using var imageStream = _imageBrowserFile.OpenReadStream(_maxAllowSize);//.CopyToAsync(fileStream);
+            await imageStream.CopyToAsync(fileStream);
 
-                Console.WriteLine(ex.Message);
-            }
+            return imageRelativePath.Replace("\\", "/");
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+            return null;
         }
     }
 
-    private async Task SubmitFormHandler()
+
+    private async Task SaveBlogPost()
     {
-        await SaveImage();
+        if (!await ValidateContentAndImage())
+            return;
+
+        var imagePath = await SaveImage();
+        if (string.IsNullOrWhiteSpace(imagePath))
+            return;
+
+        _model.Content = await quillHtml!.GetHTML();
+        _model.Image = imagePath;
+
+        _loaderText = "Save blog post...";
+        _isLoading = true;
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.GetIdClaim();
+
+        var result = await BlogPostService.SaveBlogPost(_model, userId);
+        _imageBrowserFile = null;
+        _isLoading = false;
+    }
+
+    private async Task<bool> ValidateContentAndImage()
+    {
+        var content = await quillHtml!.GetText();
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            _errorMessage = "Content is required";
+            return false;
+        }
+        if (_imageBrowserFile is null)
+        {
+            _errorMessage = "Image is required";
+            return false;
+        }
+        return true;
     }
 }
