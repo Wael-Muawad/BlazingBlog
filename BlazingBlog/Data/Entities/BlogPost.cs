@@ -21,6 +21,7 @@ namespace BlazingBlog.Data.Entities
         [Required]
         public string Content { get; set; }
 
+        [Range(1, int.MaxValue, ErrorMessage = "Please select a valid catigory")]
         public int CategoryId { get; set; }
 
         public string UserId { get; set; }

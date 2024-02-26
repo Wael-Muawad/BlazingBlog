@@ -2,6 +2,7 @@
 @using Blazored.TextEditor
 @inject ICategoryService CategoryService
 @inject IBlogPostService BlogPostService
+@inject IWebHostEnvironment WebHostEnvironment
 @rendermode @(new InteractiveServerRenderMode(prerender:true))
 @layout AdminLayout
 @attribute [Authorize]
@@ -26,8 +27,10 @@
 }
 
 
-<EditForm Model="_model">
+<EditForm Model="_model" OnSubmit="SubmitFormHandler">
     <DataAnnotationsValidator />
+    <AntiforgeryToken />
+    @* <ValidationSummary Model="_errorMessage" /> *@
 
     <div class="row">
         <div class="col-sm-6">
@@ -41,7 +44,7 @@
 
             <div class="mb-3">
                 <label class="col-form-label">Category</label>
-                <InputSelect @bind-Value="_model.Category" class="form-control form-control-sm">
+                <InputSelect @bind-Value="_model.CategoryId" class="form-control form-control-sm">
                     <option value="0">Select Category</option>
                     @foreach (var c in _categories)
                     {
@@ -61,9 +64,16 @@
 
             <div class="mb-3">
                 <label class="col-form-label">Upload Image</label>
-                <InputFile @bind-Value="_model.Image" />
+                <InputFile @bind-Value="_model.Image" OnChange="@HandleFileUpload" />
                 <ValidationMessage For="() => _model.Image" class="text-danger" />
             </div>
+
+            @if (!string.IsNullOrWhiteSpace(_previewImageUrl))
+            {
+                <div class="mb-3">
+                    <img src="@_previewImageUrl" style="height: 200px;" />
+                </div>
+            }
 
             <div class="mb-3 ml-4">
                 <label class="col-form-label">
@@ -89,43 +99,43 @@
 
         <div class="col-sm-6 d-flex">
             <div class="mb-3 flex-grow-1">
-                        <label class="form-label">Content: </label>
+                <label class="form-label">Content: </label>
 
-                        <BlazoredTextEditor @ref="@quillHtml" Placeholder="Enter content...">
-                            <ToolbarContent>
-                                <select class="ql-header">
-                                    <option selected=""></option>
-                                    <option value="1"></option>
-                                    <option value="2"></option>
-                                    <option value="3"></option>
-                                    <option value="4"></option>
-                                    <option value="5"></option>
-                                </select>
-                                <span class="ql-formats">
-                                    <button class="ql-bold"></button>
-                                    <button class="ql-italic"></button>
-                                    <button class="ql-underline"></button>
-                                    <button class="ql-strike"></button>
-                                </span>
-                                <span class="ql-formats">
-                                    <select class="ql-color"></select>
-                                    <select class="ql-background"></select>
-                                </span>
-                                <span class="ql-formats">
-                                    <button class="ql-list" value="ordered"></button>
-                                    <button class="ql-list" value="bullet"></button>
-                                </span>
-                                <span class="ql-formats">
-                                    <button class="ql-link"></button>
-                                </span>
-                            </ToolbarContent>
-                            <EditorContent>
-                                @((MarkupString)_model.Content)
-                            </EditorContent>
-                        </BlazoredTextEditor>
+                <BlazoredTextEditor @ref="@quillHtml" Placeholder="Enter content...">
+                    <ToolbarContent>
+                        <select class="ql-header">
+                            <option selected=""></option>
+                            <option value="1"></option>
+                            <option value="2"></option>
+                            <option value="3"></option>
+                            <option value="4"></option>
+                            <option value="5"></option>
+                        </select>
+                        <span class="ql-formats">
+                            <button class="ql-bold"></button>
+                            <button class="ql-italic"></button>
+                            <button class="ql-underline"></button>
+                            <button class="ql-strike"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <select class="ql-color"></select>
+                            <select class="ql-background"></select>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-list" value="ordered"></button>
+                            <button class="ql-list" value="bullet"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-link"></button>
+                        </span>
+                    </ToolbarContent>
+                    <EditorContent>
+                        @((MarkupString)_model.Content)
+                    </EditorContent>
+                </BlazoredTextEditor>
 
-                        <ValidationMessage For="()=> _model.Content" />
-                    </div>
+                <ValidationMessage For="()=> _model.Content" />
+            </div>
         </div>
     </div>
 
@@ -140,6 +150,12 @@
     private Category[] _categories = [];
     private BlazoredTextEditor? quillHtml;
 
+    //////////////////////////////////////
+    private string? _previewImageUrl;
+    private const long _maxAllowSize = 3072000;
+    private IBrowserFile _imageBrowserFile;
+    //////////////////////////////////////
+
     protected override async Task OnInitializedAsync()
     {
         _isLoading = true;
@@ -149,4 +165,52 @@
         _isLoading = false;
     }
 
+    private async Task HandleFileUpload(InputFileChangeEventArgs inputFileArgs)
+    {
+        var browserFile = inputFileArgs.File;
+
+
+        var imageExtension = Path.GetExtension(browserFile.Name)[1..];
+        using var imageStream = browserFile.OpenReadStream(_maxAllowSize);
+        using var ms = new MemoryStream();
+        await imageStream.CopyToAsync(ms);
+
+        //<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyb
+        _previewImageUrl = $"data:image/{imageExtension};base64,{Convert.ToBase64String(ms.ToArray())}";
+        _imageBrowserFile = browserFile;
+    }
+
+    private async Task SaveImage()
+    {
+        if (_imageBrowserFile is not null)
+        {
+            try
+            {
+                var folderPath = Path.Combine(WebHostEnvironment.WebRootPath, "Images", "BlogPosts");
+                Directory.CreateDirectory(folderPath);
+
+                var imageName = Path.GetRandomFileName();
+                var imageExtension = Path.GetExtension(_imageBrowserFile.Name);
+                var imageFullPath = Path.Combine(WebHostEnvironment.WebRootPath, folderPath, imageName, imageExtension);
+
+                using var fileStream = new FileStream(folderPath, FileMode.Create);
+                using var imageStream = _imageBrowserFile.OpenReadStream(_maxAllowSize);
+                await imageStream.CopyToAsync(fileStream);
+
+                _model.Image = imageName;
+                _model.Content = imageName;
+                _imageBrowserFile = null;
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+            }
+        }
+    }
+
+    private async Task SubmitFormHandler()
+    {
+        await SaveImage();
+    }
 }
