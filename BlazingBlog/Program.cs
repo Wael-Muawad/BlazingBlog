@@ -133,5 +133,13 @@ add blogpost service
 add manage blogpost page and add blogpost page
 
 
+4:56:40 - 5:15:10
+add rechtech editor 
+
+
+5:15:10 - 
+add upload image functionality  
+
+
 
  */
