@@ -1,6 +1,7 @@
 using BlazingBlog.Components;
 using BlazingBlog.Components.Account;
 using BlazingBlog.Data;
+using BlazingBlog.Services.BlogPostsService;
 using BlazingBlog.Services.CategoriesService;
 using BlazingBlog.Services.SeedsService;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -20,7 +21,8 @@ builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
 builder.Services.AddTransient<ISeedService, SeedService>()
-                .AddTransient<ICategoryService, CategoryService>();
+                .AddTransient<ICategoryService, CategoryService>()
+                .AddTransient<IBlogPostService, BlogPostService>();
 
 builder.Services.AddAuthentication(options =>
     {
