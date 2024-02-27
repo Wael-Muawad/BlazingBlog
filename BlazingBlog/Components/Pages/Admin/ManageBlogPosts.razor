@@ -22,7 +22,7 @@
     <Loader LoaderText="@_loaderText" />
 }
 
-<QuickGrid @ref="_quickGrid" ItemsProvider="_gridItemsProvider" Pagination="_paginationState" Class="table table-bordered table-striped table-hover">
+<QuickGrid @ref="_quickGrid" ItemsProvider="_gridItemsProvider" Pagination="_paginationState" class="table table-bordered table-striped table-hover">
     <PropertyColumn Property="@(b => b.Id)" />
 
     <TemplateColumn Title="">
@@ -44,38 +44,38 @@
         </div>
     </TemplateColumn>
 
-    <PropertyColumn Property="@(b => b.Category.Name)" Title="Featured" />
-    <TemplateColumn Title="Featured">
+    <PropertyColumn Property="@(b => b.Category.Name)" Title="Category" Class="col-justify-center " />
+    <TemplateColumn Title="Featured" Class="col-justify-center ">
         @if (context.IsFeatured)
         {
             <label class="text-success">
-                <input type="checkbox" @onchange="@(() => IsFeaturedHandler(context))" checked /> Yes
+                <input type="checkbox" @onchange="@(() => CheckboxHandler(context, CheckboxHandleOptions.IsFeatured))" checked /> Yes
             </label>
         }
         else
         {
             <label class="text-danger">
-                <input type="checkbox" @onchange="@(() => IsFeaturedHandler(context))" /> No
+                <input type="checkbox" @onchange="@(() => CheckboxHandler(context, CheckboxHandleOptions.IsFeatured))" /> No
             </label>
         }
     </TemplateColumn>
 
-    <TemplateColumn Title="Published">
+    <TemplateColumn Title="Published" Class="col-justify-center ">
         @if (context.IsPublished)
         {
             <label class="text-success">
-                <input type="checkbox" @onchange="@(() => IsPublishedHandler(context))" checked /> Yes
+                <input type="checkbox" @onchange="@(() => CheckboxHandler(context, CheckboxHandleOptions.IsPublished))" checked /> Yes
             </label>
         }
         else
         {
             <label class="text-danger">
-                <input type="checkbox" @onchange="@(() => IsPublishedHandler(context))" /> No
+                <input type="checkbox" @onchange="@(() => CheckboxHandler(context, CheckboxHandleOptions.IsPublished))" /> No
             </label>
         }
     </TemplateColumn>
 
-    <TemplateColumn>
+    <TemplateColumn Class="col-justify-center ">
         <a href="admin/manage-blog-posts/edit/@context.Id"
            class="btn btn-sm btn-primary"
            data-enhance-nav="false">
@@ -113,7 +113,6 @@
         };
 
 
-
     protected async override Task OnInitializedAsync()
     {
         Console.ForegroundColor = ConsoleColor.DarkGreen;
@@ -122,78 +121,42 @@
         {
             _isLoading = true;
             _loaderText = "Fetching blog posts...";
-            //StateHasChanged();
+            StateHasChanged();
 
             var pagedBlogs = await BlogPostService.GetBlogPosts(request.StartIndex, request.Count ?? PageSize);
 
             _isLoading = false;
-            //StateHasChanged();
+            StateHasChanged();
 
             return GridItemsProviderResult.From(pagedBlogs.Records, pagedBlogs.TotalCount);
         };
     }
 
-    protected override void OnAfterRender(bool firstRender)
-    {
-        // Console.ForegroundColor = ConsoleColor.DarkGreen;
-        // _firstRender = firstRender;
-        // if (firstRender)
-        // {
-        //     _forceReload = true;
-        //     Console.WriteLine("OnAfterRender firstRender true \n\n");
-        // }
-        // else
-        //     _forceReload = false;
-        // Console.WriteLine("OnAfterRender  \n\n");
-        base.OnAfterRender(firstRender);
-    }
-
-    protected override Task OnAfterRenderAsync(bool firstRender)
-    {
-        // Console.ForegroundColor = ConsoleColor.DarkGreen;
-        if (firstRender)
-            Console.WriteLine("OnAfterRenderAsync firstRender true \n\n");
-        Console.WriteLine("OnAfterRenderAsync  \n\n");
-        return base.OnAfterRenderAsync(firstRender);
-    }
-
-    private async Task IsFeaturedHandler(BlogPost blogPost)
+    private async Task CheckboxHandler(BlogPost blogPost, CheckboxHandleOptions checkbox)
     {
         _loaderText = "Saving changes...";
         _isLoading = true;
-        blogPost.IsFeatured = !blogPost.IsFeatured;
+
+        if (checkbox == CheckboxHandleOptions.IsFeatured)
+            blogPost.IsFeatured = !blogPost.IsFeatured;
+        else
+            blogPost.IsPublished = !blogPost.IsPublished;
 
         var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
         var result = await BlogPostService.SaveBlogPost(blogPost, auth.User.GetIdClaim());
         _isLoading = false;
-        // if (!_firstRender && !_checkChanged)
-        // {
-        //     _checkChanged = true;
-        //     _forceReload = true;
-        // }
+
         await _quickGrid.RefreshDataAsync();
-        // NavigationManager.Refresh(forceReload: _forceReload);
     }
 
-    private async Task IsPublishedHandler(BlogPost blogPost)
-    {
-        _loaderText = "Saving changes...";
-        _isLoading = true;
-        blogPost.IsPublished = !blogPost.IsPublished;
-
-        var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-
-        var result = await BlogPostService.SaveBlogPost(blogPost, auth.User.GetIdClaim());
-        _isLoading = false;
-        // if (!_firstRender && !_checkChanged)
-        // {
-        //     _checkChanged = true;
-        //     _forceReload = true;
-        // }
-        await _quickGrid.RefreshDataAsync();
-        // NavigationManager.Refresh(forceReload: _forceReload);
-    }
 
     //todo check lifecycle
+
+
+    private enum CheckboxHandleOptions
+    {
+        IsPublished,
+        IsFeatured
+    }
 }

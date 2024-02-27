@@ -1,5 +1,5 @@
 ﻿@page "/admin/manage-blog-posts/new"
-@page "/admin/manage-blog-posts/edit/{id:int}"
+@page "/admin/manage-blog-posts/edit/{Id:int}"
 
 
 @using Blazored.TextEditor
@@ -25,7 +25,7 @@
 
 
 
-<AdminHeader Title="Create new Blog Post" >
+<AdminHeader Title="Create new Blog Post">
     <ActionButtons>
         <NavLink href="admin/manage-blog-posts" class="btn btn-sm btn-primary">
             Go Back
@@ -171,27 +171,43 @@
     private string? _errorMessage;
     //////////////////////////////////////
     private string? _previewImageUrl;
+    private string? _imageUrlToDelete;
+    private bool _shouldDeleteImage;
     private const long _maxAllowSize = 3072000;
-    private IBrowserFile _imageBrowserFile;
+    private IBrowserFile? _imageBrowserFile;
     //////////////////////////////////////
     [Parameter]
-    public int id { get; set; }
+    public int? Id { get; set; }
     //////////////////////////////////////
 
     protected override async Task OnInitializedAsync()
     {
-        _loaderText = "Fetching data...";
-        _isLoading = true;
-
+        SetLoaderTrueWithMessage("Fetching data...");
         _categories = await CategoryService.GetCategories();
         _isLoading = false;
+
+        if (Id.HasValue  &&  Id > 0)
+        {
+            var blogPost = await BlogPostService.GetBlogPostById(Id.Value);
+            if (blogPost is null)
+            {
+                NavigationManager.NavigateTo("/admin/manage-blog-posts", true, true);
+                return;
+            }
+
+            _model = blogPost;
+            _previewImageUrl = blogPost.Image;
+        }
     }
 
     private async Task HandleFileUpload(InputFileChangeEventArgs inputFileArgs)
     {
-        var browserFile = inputFileArgs.File;
+        await PreviewImage(inputFileArgs.File);
+        _imageBrowserFile = inputFileArgs.File;
+    }
 
-
+    private async Task PreviewImage(IBrowserFile browserFile)
+    {
         var imageExtension = Path.GetExtension(browserFile.Name)[1..];
         using var imageStream = browserFile.OpenReadStream(_maxAllowSize);
         using var ms = new MemoryStream();
@@ -199,11 +215,12 @@
 
         //<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyb
         _previewImageUrl = $"data:image/{imageExtension};base64,{Convert.ToBase64String(ms.ToArray())}";
-        _imageBrowserFile = browserFile;
+
+        if (_model.Id > 0)
+            _shouldDeleteImage = true;
     }
 
-
-    private async Task<string?> SaveImage()
+    private async Task<string?> SaveImage(IBrowserFile browserFile)
     {
         try
         {
@@ -211,13 +228,13 @@
             Directory.CreateDirectory(folderPath);
 
             var imageName = Path.GetRandomFileName();
-            var imageExtension = Path.ChangeExtension(imageName, Path.GetExtension(_imageBrowserFile.Name));
+            var imageExtension = Path.ChangeExtension(imageName, Path.GetExtension(browserFile.Name));
 
             var imageRelativePath = Path.Combine("Images", "BlogPosts", (imageName + imageExtension));
             var imageAbsolutePath = Path.Combine(WebHostEnvironment.WebRootPath, imageRelativePath);
 
             await using var fileStream = new FileStream(imageAbsolutePath, FileMode.Create);
-            using var imageStream = _imageBrowserFile.OpenReadStream(_maxAllowSize);//.CopyToAsync(fileStream);
+            using var imageStream = browserFile.OpenReadStream(_maxAllowSize);//.CopyToAsync(fileStream);
             await imageStream.CopyToAsync(fileStream);
 
             return imageRelativePath.Replace("\\", "/");
@@ -229,6 +246,19 @@
         }
     }
 
+    private void DeleteImage(string imgUrl)
+    {
+        try
+        {
+            var imageRelativePath = imgUrl.Replace("/", "\\");
+            var imageAbsolutePath = Path.Combine(WebHostEnvironment.WebRootPath, imageRelativePath);
+            File.Delete(imageAbsolutePath);
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+    }
 
     private async Task SaveBlogPost()
     {
@@ -237,15 +267,22 @@
             if (!await ValidateContentAndImage())
                 return;
 
-            var imagePath = await SaveImage();
-            if (string.IsNullOrWhiteSpace(imagePath))
-                return;
+            if (_imageBrowserFile is not null)
+            {
+                var imagePath = await SaveImage(_imageBrowserFile);
+                if (string.IsNullOrWhiteSpace(imagePath))
+                    return;
+
+                if (_model.Id > 0 && _shouldDeleteImage)
+                    _imageUrlToDelete = _model.Image;
+
+                _model.Image = imagePath;
+            }
 
             _model.Content = await quillHtml!.GetHTML();
-            _model.Image = imagePath;
 
-            _loaderText = "Save blog post...";
-            _isLoading = true;
+            SetLoaderTrueWithMessage("Save blog post...");
+
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             var userId = authState.User.GetIdClaim();
 
@@ -253,6 +290,11 @@
             _imageBrowserFile = null;
             _isLoading = false;
             _errorMessage = null;
+
+            if (_shouldDeleteImage && !string.IsNullOrWhiteSpace(_imageUrlToDelete))
+                DeleteImage(_imageUrlToDelete);
+
+            _shouldDeleteImage = false;
             NavigationManager.NavigateTo("/admin/manage-blog-posts", true, true);
         }
         catch (Exception ex)
@@ -261,6 +303,11 @@
         }
     }
 
+    private void SetLoaderTrueWithMessage(string message)
+    {
+        _loaderText = message;
+        _isLoading = true;
+    }
     private async Task<bool> ValidateContentAndImage()
     {
         var content = await quillHtml!.GetText();
@@ -269,7 +316,7 @@
             _errorMessage = "Content is required";
             return false;
         }
-        if (_imageBrowserFile is null)
+        if (_imageBrowserFile is null  &&  string.IsNullOrWhiteSpace(_previewImageUrl))
         {
             _errorMessage = "Image is required";
             return false;

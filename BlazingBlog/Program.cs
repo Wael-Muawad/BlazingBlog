@@ -145,7 +145,9 @@ add upload image functionality and add new blogpost
 fix manage blog post table
 
 
-6:41:40 - 
+6:41:40 - 6:57:30
+edit blog post and delete image if edit
+
 
 
  */
