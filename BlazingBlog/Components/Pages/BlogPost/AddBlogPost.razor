@@ -4,7 +4,7 @@
 
 @using Blazored.TextEditor
 @inject ICategoryService CategoryService
-@inject IBlogPostService BlogPostService
+@inject IBlogPostAdminService BlogPostService
 @inject IWebHostEnvironment WebHostEnvironment
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
@@ -25,7 +25,7 @@
 
 
 
-<AdminHeader Title="Create new Blog Post">
+<AdminHeader Title="@(Id.HasValue && _model.Id > 0 ? "Update Blog Post" : "Create a New Blog Post")">
     <ActionButtons>
         <NavLink href="admin/manage-blog-posts" class="btn btn-sm btn-primary">
             Go Back

@@ -22,7 +22,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuth
 
 builder.Services.AddTransient<ISeedService, SeedService>()
                 .AddTransient<ICategoryService, CategoryService>()
-                .AddTransient<IBlogPostService, BlogPostService>();
+                .AddTransient<IBlogPostAdminService, BlogPostAdminService>();
 
 builder.Services.AddAuthentication(options =>
     {
@@ -126,7 +126,7 @@ add categories to navbar if ShowOnNavbar is true
 
 
 3:43:50 - 4:11:50
-add blogpost service
+add blogpostAdmin service
 
 
 4:11:50 - 4:43:25(4:56:40)
@@ -147,6 +147,16 @@ fix manage blog post table
 
 6:41:40 - 6:57:30
 edit blog post and delete image if edit
+
+
+6:57:30 - 
+add blogpost service
+
+
+
+
+
+
 
 
 
