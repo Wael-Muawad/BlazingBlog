@@ -32,5 +32,11 @@ namespace BlazingBlog.Utils
 
         [GeneratedRegex(@"[^0-9a-z_]")]
         private static partial Regex SlugRegex();
+
+
+        public static string TimeDisplaied(this DateTime? dateTime)
+        {
+            return dateTime?.ToString("MMM dd") ?? string.Empty;
+        }
     }
 }

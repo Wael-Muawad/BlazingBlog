@@ -186,7 +186,7 @@
         _categories = await CategoryService.GetCategories();
         _isLoading = false;
 
-        if (Id.HasValue  &&  Id > 0)
+        if (Id.HasValue && Id > 0)
         {
             var blogPost = await BlogPostService.GetBlogPostById(Id.Value);
             if (blogPost is null)
@@ -316,7 +316,7 @@
             _errorMessage = "Content is required";
             return false;
         }
-        if (_imageBrowserFile is null  &&  string.IsNullOrWhiteSpace(_previewImageUrl))
+        if (_imageBrowserFile is null && string.IsNullOrWhiteSpace(_previewImageUrl))
         {
             _errorMessage = "Image is required";
             return false;

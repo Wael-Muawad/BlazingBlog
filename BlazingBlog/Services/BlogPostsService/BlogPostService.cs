@@ -30,16 +30,27 @@ namespace BlazingBlog.Services.BlogPostsService
                                         .AsNoTracking()
                                         .Include(b => b.Category)
                                         .Include(b => b.User)
-                                        .Where(b => b.IsFeatured && b.IsPublished);
+                                        .Where(b => b.IsPublished);
 
                 if (categoryId > 0)
                 {
                     query = query.Where(b => b.CategoryId == categoryId);
                 }
 
-                return await query.OrderBy(b => Guid.NewGuid())
-                            .Take(count)
-                            .ToArrayAsync();
+                var records = await query.Where(b => b.IsFeatured)
+                                         .OrderBy(b => Guid.NewGuid())
+                                         .Take(count)
+                                         .ToArrayAsync();
+                if (count < records.Length)
+                {
+                    var additionalRecords = await query.Where(b => b.IsFeatured)
+                                                       .OrderBy(b => Guid.NewGuid())
+                                                       .Take(count - records.Length)
+                                                       .ToArrayAsync();
+                    records = [.. records, .. additionalRecords];
+                }
+
+                return records;
             });
 
             return result;

@@ -154,8 +154,8 @@ edit blog post and delete image if edit
 add blogpost service
 
 
-
-
+7:19:15 - 7:43:55
+fix shared pages and add data from DB
 
 
 
