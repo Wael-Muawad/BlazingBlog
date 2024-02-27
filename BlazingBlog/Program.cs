@@ -137,8 +137,13 @@ add manage blogpost page and add blogpost page
 add rechtech editor 
 
 
-5:15:10 - 
+5:15:10 - 6:17:30
 add upload image functionality  
+
+
+6:17:30 - 
+
+
 
 
 

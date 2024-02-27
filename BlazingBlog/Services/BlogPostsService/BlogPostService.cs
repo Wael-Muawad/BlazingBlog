@@ -68,7 +68,7 @@ namespace BlazingBlog.Services.BlogPostsService
                     //add blogpost
                     var isDuplicateTitle = await context.BlogPosts
                                             .AsNoTracking()
-                                            .AnyAsync(b => b.Id == blogPost.Id);
+                                            .AnyAsync(b => b.Title == blogPost.Title);
                     if (isDuplicateTitle)
                     {
                         throw new InvalidOperationException($"Blog Post with same title '{blogPost.Title}' already exist");
@@ -89,7 +89,7 @@ namespace BlazingBlog.Services.BlogPostsService
                     //edit blogpost
                     var isDuplicateTitle = await context.BlogPosts
                                             .AsNoTracking()
-                                            .AnyAsync(b => b.Id == blogPost.Id && b.Id != blogPost.Id);
+                                            .AnyAsync(b => b.Title == blogPost.Title && b.Id != blogPost.Id);
                     if (isDuplicateTitle)
                     {
                         throw new InvalidOperationException($"Blog Post with same title '{blogPost.Title}' already exist");
@@ -141,7 +141,7 @@ namespace BlazingBlog.Services.BlogPostsService
              */
             var result = await ExecuteOnContext(async context =>
             {
-                string originalSlug = blogPost.Slug.ToSlug();
+                string originalSlug = blogPost.Title.ToSlug();
                 string slug = originalSlug;
 
                 int count = 1;

@@ -4,6 +4,8 @@
 @inject IBlogPostService BlogPostService
 @inject IWebHostEnvironment WebHostEnvironment
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
 @rendermode @(new InteractiveServerRenderMode(prerender:true))
 @layout AdminLayout
 @attribute [Authorize]
@@ -20,7 +22,13 @@
 
 
 
-<AdminHeader Title="Create new Blog Post" />
+<AdminHeader Title="Create new Blog Post" >
+    <ActionButtons>
+        <NavLink href="admin/manage-blog-posts" class="btn btn-sm btn-primary">
+            Go Back
+        </NavLink>
+    </ActionButtons>
+</AdminHeader>
 
 @if (_isLoading)
 {
@@ -218,24 +226,33 @@
 
     private async Task SaveBlogPost()
     {
-        if (!await ValidateContentAndImage())
-            return;
+        try
+        {
+            if (!await ValidateContentAndImage())
+                return;
 
-        var imagePath = await SaveImage();
-        if (string.IsNullOrWhiteSpace(imagePath))
-            return;
+            var imagePath = await SaveImage();
+            if (string.IsNullOrWhiteSpace(imagePath))
+                return;
 
-        _model.Content = await quillHtml!.GetHTML();
-        _model.Image = imagePath;
+            _model.Content = await quillHtml!.GetHTML();
+            _model.Image = imagePath;
 
-        _loaderText = "Save blog post...";
-        _isLoading = true;
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var userId = authState.User.GetIdClaim();
+            _loaderText = "Save blog post...";
+            _isLoading = true;
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userId = authState.User.GetIdClaim();
 
-        var result = await BlogPostService.SaveBlogPost(_model, userId);
-        _imageBrowserFile = null;
-        _isLoading = false;
+            var result = await BlogPostService.SaveBlogPost(_model, userId);
+            _imageBrowserFile = null;
+            _isLoading = false;
+            _errorMessage = null;
+            NavigationManager.NavigateTo("/admin/manage-blog-posts", true, true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
     }
 
     private async Task<bool> ValidateContentAndImage()
