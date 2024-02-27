@@ -1,4 +1,7 @@
 ﻿@page "/admin/manage-blog-posts/new"
+@page "/admin/manage-blog-posts/edit/{id:int}"
+
+
 @using Blazored.TextEditor
 @inject ICategoryService CategoryService
 @inject IBlogPostService BlogPostService
@@ -170,6 +173,9 @@
     private string? _previewImageUrl;
     private const long _maxAllowSize = 3072000;
     private IBrowserFile _imageBrowserFile;
+    //////////////////////////////////////
+    [Parameter]
+    public int id { get; set; }
     //////////////////////////////////////
 
     protected override async Task OnInitializedAsync()

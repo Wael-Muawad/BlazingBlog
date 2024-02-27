@@ -1,6 +1,8 @@
 ﻿@page "/admin/manage-blog-posts"
 
 @inject IBlogPostService BlogPostService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
 @rendermode @(new InteractiveServerRenderMode(prerender:false))
 
 
@@ -20,10 +22,66 @@
     <Loader LoaderText="@_loaderText" />
 }
 
-<QuickGrid ItemsProvider="_gridItemsProvider" Pagination="_paginationState">
+<QuickGrid @ref="_quickGrid" ItemsProvider="_gridItemsProvider" Pagination="_paginationState" Class="table table-bordered table-striped table-hover">
     <PropertyColumn Property="@(b => b.Id)" />
-    <PropertyColumn Property="@(b => b.Title)" />
 
+    <TemplateColumn Title="">
+        <div class="py-2" style="display:grid;  grid-template-columns: 60px auto;  grid-column-gap:10px: ">
+            <img src="@context.Image" style="height:60px;  width:60px;  object-fit:cover;" />
+            <div class="ml-2">
+                <label class="mb-0 d-block">@context.Title</label>
+                @if (context.IsPublished)
+                {
+                    <a href="/details" target="_blank">
+                        @context.Slug
+                    </a>
+                }
+                else
+                {
+                    <label>@context.Slug</label>
+                }
+            </div>
+        </div>
+    </TemplateColumn>
+
+    <PropertyColumn Property="@(b => b.Category.Name)" Title="Featured" />
+    <TemplateColumn Title="Featured">
+        @if (context.IsFeatured)
+        {
+            <label class="text-success">
+                <input type="checkbox" @onchange="@(() => IsFeaturedHandler(context))" checked /> Yes
+            </label>
+        }
+        else
+        {
+            <label class="text-danger">
+                <input type="checkbox" @onchange="@(() => IsFeaturedHandler(context))" /> No
+            </label>
+        }
+    </TemplateColumn>
+
+    <TemplateColumn Title="Published">
+        @if (context.IsPublished)
+        {
+            <label class="text-success">
+                <input type="checkbox" @onchange="@(() => IsPublishedHandler(context))" checked /> Yes
+            </label>
+        }
+        else
+        {
+            <label class="text-danger">
+                <input type="checkbox" @onchange="@(() => IsPublishedHandler(context))" /> No
+            </label>
+        }
+    </TemplateColumn>
+
+    <TemplateColumn>
+        <a href="admin/manage-blog-posts/edit/@context.Id"
+           class="btn btn-sm btn-primary"
+           data-enhance-nav="false">
+            Edit
+        </a>
+    </TemplateColumn>
 </QuickGrid>
 
 <Paginator State="_paginationState"></Paginator>
@@ -31,10 +89,11 @@
 
 
 
-
-
-
-
+<style type="text/css">
+    .table > tbody > tr > td {
+        vertical-align: middle;
+    }
+</style>
 
 
 
@@ -42,8 +101,12 @@
 @code {
     private bool _isLoading;
     private string _loaderText;
-    public const int PageSize = 10;
+    public const int PageSize = 5;
     GridItemsProvider<BlogPost> _gridItemsProvider; //todo use dto with mapper
+    private bool _forceReload = true;
+    private bool _checkChanged = false;
+    private bool _firstRender = false;
+    private QuickGrid<BlogPost> _quickGrid = new();
     PaginationState _paginationState = new PaginationState
         {
             ItemsPerPage = PageSize
@@ -53,14 +116,84 @@
 
     protected async override Task OnInitializedAsync()
     {
+        Console.ForegroundColor = ConsoleColor.DarkGreen;
+        Console.WriteLine("OnInitializedAsync  \n\n");
         _gridItemsProvider = async request =>
         {
             _isLoading = true;
             _loaderText = "Fetching blog posts...";
+            //StateHasChanged();
+
             var pagedBlogs = await BlogPostService.GetBlogPosts(request.StartIndex, request.Count ?? PageSize);
 
             _isLoading = false;
+            //StateHasChanged();
+
             return GridItemsProviderResult.From(pagedBlogs.Records, pagedBlogs.TotalCount);
         };
     }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // Console.ForegroundColor = ConsoleColor.DarkGreen;
+        // _firstRender = firstRender;
+        // if (firstRender)
+        // {
+        //     _forceReload = true;
+        //     Console.WriteLine("OnAfterRender firstRender true \n\n");
+        // }
+        // else
+        //     _forceReload = false;
+        // Console.WriteLine("OnAfterRender  \n\n");
+        base.OnAfterRender(firstRender);
+    }
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Console.ForegroundColor = ConsoleColor.DarkGreen;
+        if (firstRender)
+            Console.WriteLine("OnAfterRenderAsync firstRender true \n\n");
+        Console.WriteLine("OnAfterRenderAsync  \n\n");
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task IsFeaturedHandler(BlogPost blogPost)
+    {
+        _loaderText = "Saving changes...";
+        _isLoading = true;
+        blogPost.IsFeatured = !blogPost.IsFeatured;
+
+        var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        var result = await BlogPostService.SaveBlogPost(blogPost, auth.User.GetIdClaim());
+        _isLoading = false;
+        // if (!_firstRender && !_checkChanged)
+        // {
+        //     _checkChanged = true;
+        //     _forceReload = true;
+        // }
+        await _quickGrid.RefreshDataAsync();
+        // NavigationManager.Refresh(forceReload: _forceReload);
+    }
+
+    private async Task IsPublishedHandler(BlogPost blogPost)
+    {
+        _loaderText = "Saving changes...";
+        _isLoading = true;
+        blogPost.IsPublished = !blogPost.IsPublished;
+
+        var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        var result = await BlogPostService.SaveBlogPost(blogPost, auth.User.GetIdClaim());
+        _isLoading = false;
+        // if (!_firstRender && !_checkChanged)
+        // {
+        //     _checkChanged = true;
+        //     _forceReload = true;
+        // }
+        await _quickGrid.RefreshDataAsync();
+        // NavigationManager.Refresh(forceReload: _forceReload);
+    }
+
+    //todo check lifecycle
 }

@@ -138,13 +138,14 @@ add rechtech editor
 
 
 5:15:10 - 6:17:30
-add upload image functionality  
+add upload image functionality and add new blogpost 
 
 
-6:17:30 - 
+6:17:30 - 6:41:40
+fix manage blog post table
 
 
-
+6:41:40 - 
 
 
  */
