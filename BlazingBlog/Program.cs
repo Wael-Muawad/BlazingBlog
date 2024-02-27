@@ -22,7 +22,8 @@ builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuth
 
 builder.Services.AddTransient<ISeedService, SeedService>()
                 .AddTransient<ICategoryService, CategoryService>()
-                .AddTransient<IBlogPostAdminService, BlogPostAdminService>();
+                .AddTransient<IBlogPostAdminService, BlogPostAdminService>()
+                .AddTransient<IBlogPostService, BlogPostService>();
 
 builder.Services.AddAuthentication(options =>
     {
@@ -149,7 +150,7 @@ fix manage blog post table
 edit blog post and delete image if edit
 
 
-6:57:30 - 
+6:57:30 - 7:19:15
 add blogpost service
 
 
