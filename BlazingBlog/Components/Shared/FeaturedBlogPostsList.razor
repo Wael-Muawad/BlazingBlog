@@ -60,16 +60,17 @@
     [Parameter, EditorRequired]
     public BlogPost[] Posts { get; set; } = [];
 
-    private BlogPost _firstPost = default;
+    private BlogPost _firstPost = default!;
 
     protected override void OnParametersSet()
     {
-        if (Posts.Length > 0)
-            _firstPost = Posts.First();
+        // if (Posts.Length > 0)
+        //     _firstPost = Posts.First();
     }
 
     protected override void OnInitialized()
     {
-        
+        if (Posts.Length > 0)
+            _firstPost = Posts.First();
     }
 }
