@@ -5,14 +5,19 @@
             <h2 class="mb-1 h4 font-weight-bold">
                 <a class="text-dark" href="./article.html">
                     @post.Title
-                    </a>
+                </a>
             </h2>
+
             <p>
                 @post.Introduction
             </p>
+
             <div class="card-text text-muted small">
-                @post.User.Name in @post.Category.Name
+                @post.User.Name in <a href="@post.Category.Slug-posts" title="@post.Category.Name Posts">
+                    @post.Category.Name
+                </a>
             </div>
+
             <small class="text-muted">@post.PublishedAt.TimeDisplaied()</small>
         </div>
         <img height="120" src="@post.Image">

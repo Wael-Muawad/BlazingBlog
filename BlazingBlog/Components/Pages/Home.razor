@@ -41,7 +41,13 @@ MAIN
             <h5 class="font-weight-bold spanborder"><span>Latest Posts</span></h5>
             <BlogPostList Posts="_recent" />
         </div>
-        <PopularBlogPostsList Posts="_popular" />
+
+        <div class="col-md-4 pl-4">
+            <div class="sticky-top">
+                <h5 class="font-weight-bold spanborder"><span>Popular</span></h5>
+                <PopularBlogPostsList Posts="_popular" />
+            </div>
+        </div>
     </div>
 </div>
 <!-- End MAIN -->
@@ -49,7 +55,7 @@ MAIN
     private BlogPost[] _featured = [];
     private BlogPost[] _popular = [];
     private BlogPost[] _recent = []; //todo fix imports
-    private BlogPost _firstFeatured = default;
+    private BlogPost _firstFeatured = default!;
 
     protected override async Task OnInitializedAsync()
     {

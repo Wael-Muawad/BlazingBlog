@@ -20,7 +20,9 @@ NAVBAR
                 @foreach (var item in Categories)
                 {
                     <li class="nav-item">
-                        <a class="nav-link" href="category">@item.Name</a>
+                        <a class="nav-link" href="@item.Slug-posts" title="@item.Name Posts">
+                            @item.Name
+                        </a>
                     </li>
                 }
 

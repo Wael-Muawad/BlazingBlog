@@ -41,7 +41,9 @@
                                     </a>
                                 </h2>
                                 <div class="card-text text-muted small">
-                                    @post.User.Name in <a href="/category">@post.Category.Name</a>
+                                    @post.User.Name in <a href="@post.Category.Slug-posts" title="@post.Category.Name Posts">
+                                        @post.Category.Name
+                                    </a>
                                 </div>
                                 <small class="text-muted">
                                     @post.PublishedAt.TimeDisplaied();
@@ -64,13 +66,13 @@
 
     protected override void OnParametersSet()
     {
-        // if (Posts.Length > 0)
-        //     _firstPost = Posts.First();
+        if (Posts.Length > 0)
+            _firstPost = Posts.First();
     }
 
     protected override void OnInitialized()
     {
-        if (Posts.Length > 0)
-            _firstPost = Posts.First();
+        // if (Posts.Length > 0)
+        //     _firstPost = Posts.First();
     }
 }

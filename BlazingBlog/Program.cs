@@ -158,6 +158,10 @@ add blogpost service
 fix shared pages and add data from DB
 
 
+7:43:55 - 7:55:00
+7:55:00 - 8:03:30
+fix categoryPost page 
+
 
 
 

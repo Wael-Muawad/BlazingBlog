@@ -4,24 +4,28 @@
 
 <div class="col-md-4 pl-4">
     <h5 class="font-weight-bold spanborder"><span>Popular</span></h5>
-    <ol class="list-featured">
-        @foreach (var post in Posts)
-        {
-            <li>
-                <span>
-                    <h6 class="font-weight-bold">
-                        <a href="details" class="text-dark">
-                            @post.Title
-                        </a>
-                    </h6>
-                    <p class="text-muted">
-                        @post.User.Name in @post.Category.Name
-                    </p>
-                </span>
-            </li>
-        }
-    </ol>
 </div>
+
+
+<ol class="list-featured">
+    @foreach (var post in Posts)
+    {
+        <li>
+            <span>
+                <h6 class="font-weight-bold">
+                    <a href="details" class="text-dark">
+                        @post.Title
+                    </a>
+                </h6>
+                <p class="text-muted">
+                    @post.User.Name in <a href="@post.Category.Slug-posts" title="@post.Category.Name Posts">
+                        @post.Category.Name
+                    </a>
+                </p>
+            </span>
+        </li>
+    }
+</ol>
 
 @code {
     [Parameter, EditorRequired]
