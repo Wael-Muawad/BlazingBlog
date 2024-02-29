@@ -41,6 +41,7 @@ namespace BlazingBlog.Services.BlogPostsService
                                          .OrderBy(b => Guid.NewGuid())
                                          .Take(count)
                                          .ToArrayAsync();
+
                 if (count < records.Length)
                 {
                     var additionalRecords = await query.Where(b => b.IsFeatured)

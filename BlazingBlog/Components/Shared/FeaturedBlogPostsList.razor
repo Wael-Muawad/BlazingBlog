@@ -8,7 +8,7 @@
                     <div style="background-image: url(@_firstPost.Image); height: 150px;    background-size: cover;    background-repeat: no-repeat;"></div>
                     <div class="card-body px-0 pb-0 d-flex flex-column align-items-start">
                         <h2 class="h4 font-weight-bold">
-                            <a class="text-dark" href="details">
+                            <a class="text-dark" href="posts/@_firstPost.Slug">
                                 @_firstPost.Title
                             </a>
                         </h2>
@@ -36,7 +36,7 @@
                             <img height="80" src="@post.Image">
                             <div class="pl-3">
                                 <h2 class="mb-2 h6 font-weight-bold">
-                                    <a class="text-dark" href="details">
+                                    <a class="text-dark" href="posts/@post.Slug">
                                         @post.Title
                                     </a>
                                 </h2>

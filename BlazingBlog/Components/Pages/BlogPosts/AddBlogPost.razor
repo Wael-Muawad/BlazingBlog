@@ -4,7 +4,7 @@
 
 @using Blazored.TextEditor
 @inject ICategoryService CategoryService
-@inject IBlogPostAdminService BlogPostService
+@inject IBlogPostAdminService BlogPostAdminService
 @inject IWebHostEnvironment WebHostEnvironment
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
@@ -116,7 +116,7 @@
 
 
         <div class="col-sm-6 d-flex">
-            <div class="mb-3 flex-grow-1">
+            <div class="mb-5 flex-grow-1">
                 <label class="form-label">Content: </label>
 
                 <BlazoredTextEditor @ref="@quillHtml" Placeholder="Enter content...">
@@ -188,7 +188,7 @@
 
         if (Id.HasValue && Id > 0)
         {
-            var blogPost = await BlogPostService.GetBlogPostById(Id.Value);
+            var blogPost = await BlogPostAdminService.GetBlogPostById(Id.Value);
             if (blogPost is null)
             {
                 NavigationManager.NavigateTo("/admin/manage-blog-posts", true, true);
@@ -278,7 +278,8 @@
 
                 _model.Image = imagePath;
             }
-
+            var con = await quillHtml!.GetContent();
+            var htm = await quillHtml!.GetHTML();
             _model.Content = await quillHtml!.GetHTML();
 
             SetLoaderTrueWithMessage("Save blog post...");
@@ -286,7 +287,7 @@
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             var userId = authState.User.GetIdClaim();
 
-            var result = await BlogPostService.SaveBlogPost(_model, userId);
+            var result = await BlogPostAdminService.SaveBlogPost(_model, userId);
             _imageBrowserFile = null;
             _isLoading = false;
             _errorMessage = null;

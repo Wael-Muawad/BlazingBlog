@@ -1,6 +1,6 @@
 ﻿@page "/admin/manage-blog-posts"
 
-@inject IBlogPostAdminService BlogPostService
+@inject IBlogPostAdminService BlogPostAdminService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @rendermode @(new InteractiveServerRenderMode(prerender:false))
@@ -32,7 +32,7 @@
                 <label class="mb-0 d-block">@context.Title</label>
                 @if (context.IsPublished)
                 {
-                    <a href="/details" target="_blank">
+                    <a href="/posts/@context.Slug" target="_blank">
                         @context.Slug
                     </a>
                 }
@@ -123,7 +123,7 @@
             _loaderText = "Fetching blog posts...";
             StateHasChanged();
 
-            var pagedBlogs = await BlogPostService.GetBlogPosts(request.StartIndex, request.Count ?? PageSize);
+            var pagedBlogs = await BlogPostAdminService.GetBlogPosts(request.StartIndex, request.Count ?? PageSize);
 
             _isLoading = false;
             StateHasChanged();
@@ -144,7 +144,7 @@
 
         var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
-        var result = await BlogPostService.SaveBlogPost(blogPost, auth.User.GetIdClaim());
+        var result = await BlogPostAdminService.SaveBlogPost(blogPost, auth.User.GetIdClaim());
         _isLoading = false;
 
         await _quickGrid.RefreshDataAsync();

@@ -162,6 +162,11 @@ fix shared pages and add data from DB
 7:55:00 - 8:03:30
 fix categoryPost page 
 
+8:03:30 - 8:18:00
+....
+
+
+8:18:00 - 8:18:00
 
 
 
