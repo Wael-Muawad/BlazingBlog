@@ -103,6 +103,39 @@ namespace BlazingBlog.Services.BlogPostsService
 
 
 
+
+
+
+        public async Task<BlogPost[]> GetAllCategoryBlogPosts(int pageIndex, int pageSize, int categoryId = 0)
+        {
+            var result = await ExecuteOnContext(async context =>
+            {
+                var query = context.BlogPosts
+                                        .AsNoTracking()
+                                        .Include(b => b.Category)
+                                        .Include(b => b.User)
+                                        .Where(b => b.IsPublished);
+
+                if (categoryId > 0)
+                {
+                    query = query.Where(b => b.CategoryId == categoryId);
+                }
+
+                return await query.OrderByDescending(b => b.PublishedAt)
+                            .Skip(pageIndex * pageSize)
+                            .Take(pageSize)
+                            .ToArrayAsync();
+            });
+
+            return result;
+        }
+
+
+
+        private async Task<BlogPost[]> GetAllBlogPosts(int pageIndex, int pageSize, int categoryId = 0)
+        {
+            return default!;
+        }
         public async Task<DetailPageModel> GetBlogPostBySlog(string slug)
         {
             var result = await ExecuteOnContext(async context =>

@@ -35,6 +35,18 @@
 
                 <h5 class="font-weight-bold spanborder"><span>Latest</span></h5>
                 <BlogPostList Posts="_recent" />
+
+                <hr />
+                <div class="d-flex justify-content-end">
+                    <a href="@_category.Slug-posts/all"
+                       class="btn btn-sm btn-outline-primary"
+                       data-enhance-nav="true">
+                        All @_category.Name Posts
+                    </a>
+
+                </div>
+                <hr />
+
             }
 
             else
@@ -93,6 +105,8 @@
         );
 
         _featured = result[0].FirstOrDefault();
+        
+
         // if (_featured is null)
         // {
         //     NavigationManager.NavigateTo("/", replace: true);

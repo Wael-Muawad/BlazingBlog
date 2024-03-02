@@ -1,0 +1,86 @@
+﻿@page "/{Categoryslug}-posts/all"
+@page "/{Categoryslug}-posts/all/page-{PageIndex:int}"
+@inject ICategoryService CategoryService
+@inject IBlogPostService BlogPostService
+@inject NavigationManager NavigationManager
+
+
+<!--------------------------------------
+    Main
+    --------------------------------------->
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-8">
+
+            <h5 class="font-weight-bold spanborder"><span>@_category?.Name Posts @* @(PageIndex > 0 ?? (Page - @PageIndex)) *@</span></h5>
+            <BlogPostList Posts="_posts" />
+
+
+            @* <h5 class="font-weight-bold spanborder"><span>@_category?.Name Posts</span></h5>
+            <div class="card border-0 m-5 box-shadow">
+                <p class="p-5 text-center font-weight-bold" style="font-size: 25px;">
+                    There are no blog posts yet under @_category?.Name  
+                </p>
+            </div> *@
+
+        </div>
+
+
+        <div class="col-md-4 pl-4">
+            <div class="sticky-top">
+                <h5 class="font-weight-bold spanborder"><span>Popular in @_category?.Name</span></h5>
+                <PopularBlogPostsList Posts="_popular" />
+            </div>
+        </div>
+
+        <div class="col-md-8 d-flex justify-content-between">
+            <a href="admin/manage-blog-posts/new"
+               class="btn btn-sm btn-outline-primary"
+               data-enhance-nav="false">
+                Previous Page
+            </a>
+            
+            
+            <a href="admin/manage-blog-posts/new"
+               class="btn btn-sm btn-outline-primary"
+               data-enhance-nav="false">
+                Next Page
+            </a>
+        </div>
+
+    </div>
+</div>
+<!-- End Main -->
+@code {
+    [Parameter]
+    public string Categoryslug { get; set; }
+    [Parameter]
+    public int PageIndex { get; set; } = 0;
+
+    private BlogPost[] _popular = [];
+    private BlogPost[] _posts = [];
+    private Category _category;
+    ///////////////////////////////////////////////////////////////
+    private int _pageSize = 2;
+    ///////////////////////////////////////////////////////////////
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var category = await CategoryService.GetCategoryBySlug(Categoryslug);
+        if (category is null)
+        {
+            NavigationManager.NavigateTo("/", replace: true);
+            return;
+        }
+        _category = category;
+
+        var result = await Task.WhenAll(
+            BlogPostService.GetPopularBlogPosts(5, _category.Id),
+            BlogPostService.GetAllCategoryBlogPosts(PageIndex, _pageSize, _category.Id)
+        );
+
+        _popular = result[0];
+        _posts = result[1];
+    }
+}
