@@ -6,7 +6,7 @@ namespace BlazingBlog.Data.Entities
     {
         public int Id { get; set; }
 
-        [EmailAddress, Required, MaxLength(150)]
+        [EmailAddress(ErrorMessage = "Please provide a valid email"), Required, MaxLength(150)]
         public string Email { get; set; }
         
         [Required, MaxLength(25)]

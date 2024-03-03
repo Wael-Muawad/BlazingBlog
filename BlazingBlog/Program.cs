@@ -4,6 +4,7 @@ using BlazingBlog.Data;
 using BlazingBlog.Services.BlogPostsService;
 using BlazingBlog.Services.CategoriesService;
 using BlazingBlog.Services.SeedsService;
+using BlazingBlog.Services.SubscribersService;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +24,10 @@ builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuth
 builder.Services.AddTransient<ISeedService, SeedService>()
                 .AddTransient<ICategoryService, CategoryService>()
                 .AddTransient<IBlogPostAdminService, BlogPostAdminService>()
-                .AddTransient<IBlogPostService, BlogPostService>();
+                .AddTransient<IBlogPostService, BlogPostService>()
+                .AddTransient<ISubscriberService, SubscriberService>();
+
+//builder.Services.AddAntiforgery();
 
 builder.Services.AddAuthentication(options =>
     {
@@ -163,11 +167,15 @@ fix shared pages and add data from DB
 fix categoryPost page 
 
 8:03:30 - 8:18:00
-....
+work on BlogPostDetails Page
 
 
-8:18:00 - 8:18:00
+8:18:00 - 8:53:50
+add AllCategoryPosts Page with the service
 
+
+8:53:50 - 9:16:00
+work on subscribersPage and service
 
 
  */
