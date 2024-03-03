@@ -106,7 +106,7 @@ namespace BlazingBlog.Services.BlogPostsService
 
 
 
-        public async Task<BlogPost[]> GetAllCategoryBlogPosts(int pageIndex, int pageSize, int categoryId = 0)
+        public async Task<PagedResult<BlogPost>> GetAllCategoryBlogPosts(int pageIndex, int pageSize, int categoryId = 0)
         {
             var result = await ExecuteOnContext(async context =>
             {
@@ -121,10 +121,15 @@ namespace BlazingBlog.Services.BlogPostsService
                     query = query.Where(b => b.CategoryId == categoryId);
                 }
 
-                return await query.OrderByDescending(b => b.PublishedAt)
-                            .Skip(pageIndex * pageSize)
-                            .Take(pageSize)
-                            .ToArrayAsync();
+                var totalCount = await query.CountAsync();
+
+                var records = await query.OrderByDescending(b => b.PublishedAt)
+                                         .Skip(pageIndex * pageSize)
+                                         .Take(pageSize)
+                                         .ToArrayAsync();
+
+
+                return new PagedResult<BlogPost>(records, totalCount);
             });
 
             return result;

@@ -4,7 +4,7 @@
     <div class="container pt-4 pb-4">
         <div class="row">
             <div class="col-lg-6">
-                <div class="card border-0 mb-4 box-shadow h-xl-300">
+                <div class="card border-0 mb-4 box-shadow">
                     <div style="background-image: url(@_firstPost.Image); height: 150px;    background-size: cover;    background-repeat: no-repeat;"></div>
                     <div class="card-body px-0 pb-0 d-flex flex-column align-items-start">
                         <h2 class="h4 font-weight-bold">
@@ -31,7 +31,7 @@
 
                 @foreach (var post in Posts.Skip(1))
                 {
-                    <div class="flex-md-row mb-4 box-shadow h-xl-300">
+                    <div class="flex-md-row mb-4 box-shadow">
                         <div class="mb-3 d-flex align-items-center">
                             <img height="80" src="@post.Image">
                             <div class="pl-3">

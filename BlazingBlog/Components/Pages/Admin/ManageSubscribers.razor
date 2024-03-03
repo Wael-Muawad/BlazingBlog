@@ -1,0 +1,58 @@
+﻿@page "/admin/manage-subscribers"
+@using BlazingBlog.Services.SubscribersService
+@inject ISubscriberService SubscriberService
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<AdminHeader Title="Manage Subscribers" />
+
+
+@if (_isLoading)
+{
+    <Loader LoaderText=_loaderText />
+}
+
+<QuickGrid ItemsProvider="_gridItemsProvider" Pagination="_paginationState"
+           class="table table-bordered table-striped table-hover">
+    <PropertyColumn Property="@((c) => c.Name)" />
+    <PropertyColumn Property="@((c) => c.Email)" />
+    <PropertyColumn Property="@((c) => c.SubscribedOn)" Format="MMM-dd-yyyy hh:mm:ss" Title="Subscribed On" />
+</QuickGrid>
+<Paginator State="_paginationState" />
+
+
+@code {
+    private GridItemsProvider<Subscriber> _gridItemsProvider;
+    private const int _pageSize = 2;
+    private bool _isLoading;
+    private string _loaderText;
+
+    private PaginationState _paginationState = new()
+        {
+            ItemsPerPage = _pageSize
+        };
+
+    protected override async Task OnInitializedAsync()
+    {
+        _gridItemsProvider = (async request =>
+        {
+            SetLoaderTrueWithMessage("Fetching Subscribers...");
+            StateHasChanged();
+
+            var pagedResult = await SubscriberService.GetSubscribers(request.StartIndex, request.Count ?? _pageSize);
+            var gridItemsProviderResult = GridItemsProviderResult.From<Subscriber>(pagedResult.Records, pagedResult.TotalCount);
+                       
+            _isLoading = false;
+            StateHasChanged();
+
+            return gridItemsProviderResult;
+        });
+        // Subscribers = await SubscriberService.GetSubscribers();
+    }
+
+
+    private void SetLoaderTrueWithMessage(string message)
+    {
+        _loaderText = message;
+        _isLoading = true;
+    }
+}

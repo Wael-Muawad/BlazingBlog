@@ -22,7 +22,8 @@
     <Loader LoaderText="@_loaderText" />
 }
 
-<QuickGrid @ref="_quickGrid" ItemsProvider="_gridItemsProvider" Pagination="_paginationState" class="table table-bordered table-striped table-hover">
+<QuickGrid @ref="_quickGrid" ItemsProvider="_gridItemsProvider" Pagination="_paginationState"
+           class="table table-bordered table-striped table-hover">
     <PropertyColumn Property="@(b => b.Id)" />
 
     <TemplateColumn Title="">

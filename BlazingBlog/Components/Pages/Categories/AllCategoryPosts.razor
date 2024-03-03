@@ -1,5 +1,6 @@
 ﻿@page "/{Categoryslug}-posts/all"
 @page "/{Categoryslug}-posts/all/page-{PageIndex:int}"
+@using BlazingBlog.Models
 @inject ICategoryService CategoryService
 @inject IBlogPostService BlogPostService
 @inject NavigationManager NavigationManager
@@ -53,7 +54,7 @@
                 <span>&nbsp;</span>
             }
             
-            @if (_pageNumber == _pageSize)
+            @if ((_pageNumber * _pageSize + _pageSize) < _totalCount)
             {
                 <a href="@Categoryslug-posts/all/page-@(_pageNumber + 1)"
                    class="btn btn-sm btn-outline-primary"
@@ -75,6 +76,7 @@
 
     private BlogPost[] _popular = [];
     private BlogPost[] _posts = [];
+    private int _totalCount;
     private Category _category;
     ///////////////////////////////////////////////////////////////
     private const int _pageSize = 2;
@@ -86,7 +88,7 @@
     {
         if (PageIndex.HasValue)
         {
-            if (PageIndex < 2)
+            if (PageIndex < 1)
             {
                 NavigationManager.NavigateTo($"{Categoryslug}-posts/all", replace: true);
                 return;
@@ -103,12 +105,12 @@
         }
         _category = category;
 
-        var result = await Task.WhenAll(
-            BlogPostService.GetPopularBlogPosts(5, _category.Id),
-            BlogPostService.GetAllCategoryBlogPosts(_pageNumber, _pageSize, _category.Id)
-        );
+        //todo handle task.whenall 
 
-        _popular = result[0];
-        _posts = result[1];
+        _popular = await BlogPostService.GetPopularBlogPosts(5, _category.Id);
+        var result = await BlogPostService.GetAllCategoryBlogPosts(_pageNumber, _pageSize, _category.Id);
+
+        _posts = result.Records;
+        _totalCount = result.TotalCount;
     }
 }

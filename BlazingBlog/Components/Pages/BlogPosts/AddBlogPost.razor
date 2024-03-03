@@ -36,6 +36,9 @@
 @if (_isLoading)
 {
     <Loader LoaderText="@_loaderText" />
+    Task.Delay(TimeSpan.FromSeconds(3));
+    _isLoading = false;
+    StateHasChanged();
 }
 
 
@@ -301,6 +304,7 @@
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
+            _errorMessage = ex.Message;
         }
     }
 
